@@ -1,0 +1,130 @@
+package com.smarthome.smart_home_backend.controller;
+
+import com.smarthome.smart_home_backend.entity.NotificationPreference;
+import com.smarthome.smart_home_backend.service.NotificationPreferenceService;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/notification-preferences")
+public class NotificationPreferenceController {
+
+    private final NotificationPreferenceService preferenceService;
+
+    public NotificationPreferenceController(
+            NotificationPreferenceService preferenceService) {
+
+        this.preferenceService = preferenceService;
+    }
+
+    @GetMapping
+    public List<NotificationPreference> getAllPreferences() {
+        return preferenceService.getAllPreferences();
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<NotificationPreference> getByUser(
+            @PathVariable Long userId) {
+
+        return preferenceService.getByUser(userId);
+    }
+
+    @GetMapping("/device/{deviceId}")
+    public List<NotificationPreference> getByDevice(
+            @PathVariable Long deviceId) {
+
+        return preferenceService.getByDevice(deviceId);
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public List<NotificationPreference> getByCategory(
+            @PathVariable Long categoryId) {
+
+        return preferenceService.getByCategory(categoryId);
+    }
+
+    @GetMapping("/{userId}/{deviceId}/{categoryId}")
+    public ResponseEntity<NotificationPreference> getPreference(
+            @PathVariable Long userId,
+            @PathVariable Long deviceId,
+            @PathVariable Long categoryId) {
+
+        return preferenceService
+                .getPreference(
+                        userId,
+                        deviceId,
+                        categoryId
+                )
+                .map(ResponseEntity::ok)
+                .orElseGet(
+                        () -> ResponseEntity.notFound().build()
+                );
+    }
+
+    @PostMapping("/{userId}/{deviceId}/{categoryId}")
+    public ResponseEntity<NotificationPreference> createPreference(
+            @PathVariable Long userId,
+            @PathVariable Long deviceId,
+            @PathVariable Long categoryId,
+            @RequestBody NotificationPreference preference) {
+
+        try {
+            return ResponseEntity.ok(
+                    preferenceService.createPreference(
+                            userId,
+                            deviceId,
+                            categoryId,
+                            preference
+                    )
+            );
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{userId}/{deviceId}/{categoryId}")
+    public ResponseEntity<NotificationPreference> updatePreference(
+            @PathVariable Long userId,
+            @PathVariable Long deviceId,
+            @PathVariable Long categoryId,
+            @RequestBody NotificationPreference details) {
+
+        try {
+            return ResponseEntity.ok(
+                    preferenceService.updatePreference(
+                            userId,
+                            deviceId,
+                            categoryId,
+                            details
+                    )
+            );
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{userId}/{deviceId}/{categoryId}")
+    public ResponseEntity<Void> deletePreference(
+            @PathVariable Long userId,
+            @PathVariable Long deviceId,
+            @PathVariable Long categoryId) {
+
+        try {
+            preferenceService.deletePreference(
+                    userId,
+                    deviceId,
+                    categoryId
+            );
+
+            return ResponseEntity.noContent().build();
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}
