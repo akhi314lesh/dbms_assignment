@@ -2,7 +2,7 @@
 -- Smart Home / IoT Device Monitoring System
 -- Database: Oracle Database 21c Express Edition (PDB: XEPDB1, Schema: SMART_HOME)
 -- Script: 04_sample_data.sql
--- Description: Realistic test & demonstration data covering all 17 tables.
+-- Description: Realistic test and demonstration data covering all 17 tables.
 -- Note: Passwords are development mock hashes (BCrypt placeholders). Real
 --       application security must hash passwords and never store plaintext.
 -- ============================================================================
@@ -109,7 +109,7 @@ INSERT INTO ROOMS (room_id, room_name, floor_number, home_id)
 VALUES (4, 'Great Room', 1, 2);
 
 INSERT INTO ROOMS (room_id, room_name, floor_number, home_id)
-VALUES (5, 'Patio & Garden', 1, 2);
+VALUES (5, 'Patio and Garden', 1, 2);
 
 
 -- ----------------------------------------------------------------------------

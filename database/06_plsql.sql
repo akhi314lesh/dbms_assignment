@@ -243,7 +243,7 @@ BEGIN
     END;
 
     DBMS_OUTPUT.PUT_LINE('================================================================');
-    DBMS_OUTPUT.PUT_LINE('DEVICE HEALTH & STATUS REPORT: ' || UPPER(v_home_name));
+    DBMS_OUTPUT.PUT_LINE('DEVICE HEALTH AND STATUS REPORT: ' || UPPER(v_home_name));
     DBMS_OUTPUT.PUT_LINE('Generated: ' || TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS'));
     DBMS_OUTPUT.PUT_LINE('================================================================');
 

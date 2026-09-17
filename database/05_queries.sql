@@ -171,7 +171,7 @@ ORDER BY sr.reading_time DESC;
 
 
 -- ============================================================================
--- 9. ACTIVE AND UNACKNOWLEDGED ALERTS WITH CATEGORY & LOCATION DETAILS
+-- 9. ACTIVE AND UNACKNOWLEDGED ALERTS WITH CATEGORY AND LOCATION DETAILS
 -- ============================================================================
 SELECT 
     a.alert_id,
