@@ -103,10 +103,11 @@ CREATE TABLE SMART_LIGHTS (
 
 -- 8. THERMOSTATS
 -- Subtype entity for climate control devices (specialization of DEVICES).
+-- Note: "MODE" is enclosed in double quotes because MODE is an Oracle 21c SQL reserved word.
 CREATE TABLE THERMOSTATS (
     device_id          NUMBER         NOT NULL,
     target_temperature NUMBER(5,2),
-    mode               VARCHAR2(30),  -- e.g. 'HEAT', 'COOL', 'ECO', 'OFF'
+    "MODE"             VARCHAR2(30),  -- Quoted identifier: MODE is an Oracle reserved word (e.g. 'HEAT', 'COOL', 'ECO', 'OFF')
     CONSTRAINT pk_thermostats PRIMARY KEY (device_id)
 );
 

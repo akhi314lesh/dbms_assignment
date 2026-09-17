@@ -91,9 +91,9 @@ SELECT
     -- Smart Light attributes
     sl.brightness,
     sl.color_support,
-    -- Thermostat attributes
+    -- Thermostat attributes ("MODE" is quoted because MODE is an Oracle reserved word)
     th.target_temperature,
-    th.mode AS thermostat_mode,
+    th."MODE" AS thermostat_mode,
     -- Temperature Sensor attributes
     ts.unit AS temp_unit,
     ts.min_range AS temp_min,

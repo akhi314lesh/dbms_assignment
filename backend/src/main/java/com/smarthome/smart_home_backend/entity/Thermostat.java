@@ -16,7 +16,8 @@ public class Thermostat {
     @Column(name = "target_temperature")
     private Double targetTemperature;
 
-    @Column(name = "mode", length = 30)
+    // Quoted identifier: MODE is an Oracle 21c SQL reserved word
+    @Column(name = "\"MODE\"", length = 30)
     private String mode;
 
     public Thermostat() {

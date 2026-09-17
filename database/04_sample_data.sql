@@ -158,8 +158,8 @@ VALUES (2, 80.00, 'RGB');
 INSERT INTO SMART_LIGHTS (device_id, brightness, color_support)
 VALUES (7, 50.00, 'WARM_WHITE');
 
--- THERMOSTATS
-INSERT INTO THERMOSTATS (device_id, target_temperature, mode)
+-- THERMOSTATS ("MODE" quoted because MODE is an Oracle reserved word)
+INSERT INTO THERMOSTATS (device_id, target_temperature, "MODE")
 VALUES (3, 22.50, 'COOL');
 
 -- TEMPERATURE_SENSORS
