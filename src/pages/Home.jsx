@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import penthouse from '../assets/penthouse.png'
+import penthouse from "../assets/screen.png";
 
 function Home() {
   const [query, setQuery] = useState('')
