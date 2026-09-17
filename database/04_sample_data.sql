@@ -86,7 +86,7 @@ VALUES (3, 2, 'OWNER', DATE '2026-02-10');
 INSERT INTO HOME_ACCESS (user_id, home_id, role, date_granted)
 VALUES (3, 1, 'MEMBER', DATE '2026-02-01');
 
--- Sophia is GUEST on Home 1
+-- Sophia is MEMBER of Home 1
 INSERT INTO HOME_ACCESS (user_id, home_id, role, date_granted)
 VALUES (4, 1, 'MEMBER', DATE '2026-03-15');
 

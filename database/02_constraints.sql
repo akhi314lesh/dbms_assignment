@@ -3,6 +3,8 @@
 -- Database: Oracle Database 21c Express Edition (PDB: XEPDB1, Schema: SMART_HOME)
 -- Script: 02_constraints.sql
 -- Description: Defines Foreign Keys, Unique constraints, and Check constraints.
+-- Note: Foreign keys strictly implement standard referential integrity as 
+--       specified in the master schema (no unrequested ON DELETE CASCADE clauses).
 -- ============================================================================
 
 -- ============================================================================
@@ -19,32 +21,28 @@ ALTER TABLE ALERT_CATEGORIES
 
 
 -- ============================================================================
--- 2. FOREIGN KEY CONSTRAINTS
+-- 2. FOREIGN KEY CONSTRAINTS (23 Total Foreign Keys)
 -- ============================================================================
 
--- USER_CONTACT_NUMBERS -> USERS (CASCADE delete if user removed)
+-- USER_CONTACT_NUMBERS -> USERS
 ALTER TABLE USER_CONTACT_NUMBERS
     ADD CONSTRAINT fk_contact_user
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id);
 
 -- HOME_ACCESS -> USERS
 ALTER TABLE HOME_ACCESS
     ADD CONSTRAINT fk_home_access_user
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id);
 
 -- HOME_ACCESS -> HOMES
 ALTER TABLE HOME_ACCESS
     ADD CONSTRAINT fk_home_access_home
-    FOREIGN KEY (home_id) REFERENCES HOMES(home_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (home_id) REFERENCES HOMES(home_id);
 
 -- ROOMS -> HOMES
 ALTER TABLE ROOMS
     ADD CONSTRAINT fk_rooms_home
-    FOREIGN KEY (home_id) REFERENCES HOMES(home_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (home_id) REFERENCES HOMES(home_id);
 
 -- DEVICES -> ROOMS
 ALTER TABLE DEVICES
@@ -60,38 +58,32 @@ ALTER TABLE DEVICES
 -- SMART_LIGHTS -> DEVICES (Subtype specialization)
 ALTER TABLE SMART_LIGHTS
     ADD CONSTRAINT fk_smart_lights_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- THERMOSTATS -> DEVICES (Subtype specialization)
 ALTER TABLE THERMOSTATS
     ADD CONSTRAINT fk_thermostats_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- TEMPERATURE_SENSORS -> DEVICES (Subtype specialization)
 ALTER TABLE TEMPERATURE_SENSORS
     ADD CONSTRAINT fk_temp_sensors_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- MOTION_SENSORS -> DEVICES (Subtype specialization)
 ALTER TABLE MOTION_SENSORS
     ADD CONSTRAINT fk_motion_sensors_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- CAMERAS -> DEVICES (Subtype specialization)
 ALTER TABLE CAMERAS
     ADD CONSTRAINT fk_cameras_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- SENSOR_READINGS -> DEVICES (Weak entity identifying relationship)
 ALTER TABLE SENSOR_READINGS
     ADD CONSTRAINT fk_sensor_readings_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- AUTOMATION_RULES -> DEVICES (Condition source device)
 ALTER TABLE AUTOMATION_RULES
@@ -106,8 +98,7 @@ ALTER TABLE AUTOMATION_RULES
 -- RULE_ACTIONS -> AUTOMATION_RULES
 ALTER TABLE RULE_ACTIONS
     ADD CONSTRAINT fk_rule_actions_rule
-    FOREIGN KEY (rule_id) REFERENCES AUTOMATION_RULES(rule_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (rule_id) REFERENCES AUTOMATION_RULES(rule_id);
 
 -- RULE_ACTIONS -> DEVICES (Target actuator device)
 ALTER TABLE RULE_ACTIONS
@@ -137,62 +128,43 @@ ALTER TABLE ALERTS
 -- NOTIFICATION_PREFERENCES -> USERS (Ternary component 1)
 ALTER TABLE NOTIFICATION_PREFERENCES
     ADD CONSTRAINT fk_notif_pref_user
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id);
 
 -- NOTIFICATION_PREFERENCES -> DEVICES (Ternary component 2)
 ALTER TABLE NOTIFICATION_PREFERENCES
     ADD CONSTRAINT fk_notif_pref_device
-    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (device_id) REFERENCES DEVICES(device_id);
 
 -- NOTIFICATION_PREFERENCES -> ALERT_CATEGORIES (Ternary component 3)
 ALTER TABLE NOTIFICATION_PREFERENCES
     ADD CONSTRAINT fk_notif_pref_category
-    FOREIGN KEY (category_id) REFERENCES ALERT_CATEGORIES(category_id)
-    ON DELETE CASCADE;
+    FOREIGN KEY (category_id) REFERENCES ALERT_CATEGORIES(category_id);
 
 
 -- ============================================================================
--- 3. CHECK CONSTRAINTS
+-- 3. CHECK CONSTRAINTS (Explicit Master Schema Requirements Only)
 -- ============================================================================
 
 -- NOTIFICATION_PREFERENCES: enabled flag must be binary 0 or 1
+-- Stated in Master Schema Section 17: CHECK (enabled IN (0,1))
 ALTER TABLE NOTIFICATION_PREFERENCES
     ADD CONSTRAINT chk_notif_pref_enabled
     CHECK (enabled IN (0, 1));
 
 -- DEVICES: Prevent a device from being its own parent
+-- Stated in Master Schema Section 6 & Design Rules
 ALTER TABLE DEVICES
     ADD CONSTRAINT chk_device_no_self_parent
     CHECK (parent_device_id IS NULL OR parent_device_id != device_id);
 
--- DEVICES: Valid operational status
-ALTER TABLE DEVICES
-    ADD CONSTRAINT chk_device_status
-    CHECK (status IN ('ONLINE', 'OFFLINE', 'ERROR', 'MAINTENANCE'));
-
--- HOME_ACCESS: Valid role
+-- HOME_ACCESS: Enforce schema's intended home-level roles (OWNER / MEMBER)
+-- Stated in Master Schema Section 4
 ALTER TABLE HOME_ACCESS
     ADD CONSTRAINT chk_home_access_role
-    CHECK (role IN ('OWNER', 'MEMBER', 'GUEST', 'ADMIN'));
+    CHECK (role IN ('OWNER', 'MEMBER'));
 
 -- ALERTS: Valid alert source
+-- Stated in Master Schema Section 16: source - 'RULE' or 'THRESHOLD'
 ALTER TABLE ALERTS
     ADD CONSTRAINT chk_alert_source
     CHECK (source IN ('RULE', 'THRESHOLD'));
-
--- ALERTS: Valid alert status
-ALTER TABLE ALERTS
-    ADD CONSTRAINT chk_alert_status
-    CHECK (status IN ('ACTIVE', 'ACKNOWLEDGED', 'CLEARED', 'RESOLVED'));
-
--- AUTOMATION_RULES: Supported condition operators
-ALTER TABLE AUTOMATION_RULES
-    ADD CONSTRAINT chk_rule_condition_op
-    CHECK (condition_operator IN ('>', '<', '=', '>=', '<=', '!='));
-
--- SMART_LIGHTS: Brightness percentage range
-ALTER TABLE SMART_LIGHTS
-    ADD CONSTRAINT chk_smart_light_brightness
-    CHECK (brightness IS NULL OR (brightness >= 0 AND brightness <= 100));
