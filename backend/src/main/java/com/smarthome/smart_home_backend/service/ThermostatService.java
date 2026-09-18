@@ -6,6 +6,7 @@ import com.smarthome.smart_home_backend.repository.DeviceRepository;
 import com.smarthome.smart_home_backend.repository.ThermostatRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,23 +16,34 @@ public class ThermostatService {
 
     private final ThermostatRepository thermostatRepository;
     private final DeviceRepository deviceRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 
     public ThermostatService(
             ThermostatRepository thermostatRepository,
-            DeviceRepository deviceRepository) {
+            DeviceRepository deviceRepository,
+            jakarta.persistence.EntityManager entityManager) {
 
         this.thermostatRepository = thermostatRepository;
         this.deviceRepository = deviceRepository;
+        this.entityManager = entityManager;
     }
 
     public List<Thermostat> getAllThermostats() {
         return thermostatRepository.findAll();
     }
 
+    public List<Thermostat> getThermostatsByHomeIds(java.util.Collection<Long> homeIds) {
+        if (homeIds == null || homeIds.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return thermostatRepository.findByHomeIds(homeIds);
+    }
+
     public Optional<Thermostat> getThermostatById(Long deviceId) {
         return thermostatRepository.findById(deviceId);
     }
 
+    @Transactional
     public Thermostat createThermostat(
             Long deviceId,
             Thermostat thermostat) {
@@ -45,11 +57,14 @@ public class ThermostatService {
             );
         }
 
+        thermostat.setDevice(device);
         thermostat.setDeviceId(deviceId);
 
-        return thermostatRepository.save(thermostat);
+        entityManager.persist(thermostat);
+        return thermostat;
     }
 
+    @Transactional
     public Thermostat updateThermostat(
             Long deviceId,
             Thermostat thermostatDetails) {
@@ -73,6 +88,7 @@ public class ThermostatService {
         return thermostatRepository.save(existingThermostat);
     }
 
+    @Transactional
     public void deleteThermostat(Long deviceId) {
         thermostatRepository.deleteById(deviceId);
     }

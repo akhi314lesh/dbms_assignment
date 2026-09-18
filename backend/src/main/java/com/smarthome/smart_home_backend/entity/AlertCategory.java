@@ -16,7 +16,7 @@ public class AlertCategory {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "category_name", nullable = false, unique = true, length = 100)
+    @Column(name = "category_name", nullable = false, unique = true, length = 50)
     private String categoryName;
 
     @Column(name = "default_severity", nullable = false, length = 20)

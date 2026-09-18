@@ -4,6 +4,7 @@ import com.smarthome.smart_home_backend.entity.*;
 import com.smarthome.smart_home_backend.repository.*;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,7 @@ public class NotificationPreferenceService {
         return preferenceRepository.findById(id);
     }
 
+    @Transactional
     public NotificationPreference createPreference(
             Long userId,
             Long deviceId,
@@ -100,6 +102,7 @@ public class NotificationPreferenceService {
         return preferenceRepository.save(preference);
     }
 
+    @Transactional
     public NotificationPreference updatePreference(
             Long userId,
             Long deviceId,
@@ -127,6 +130,7 @@ public class NotificationPreferenceService {
         return preferenceRepository.save(existing);
     }
 
+    @Transactional
     public void deletePreference(
             Long userId,
             Long deviceId,

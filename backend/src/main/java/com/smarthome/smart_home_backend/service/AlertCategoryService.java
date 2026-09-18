@@ -4,6 +4,7 @@ import com.smarthome.smart_home_backend.entity.AlertCategory;
 import com.smarthome.smart_home_backend.repository.AlertCategoryRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,10 +27,12 @@ public class AlertCategoryService {
         return categoryRepository.findById(id);
     }
 
+    @Transactional
     public AlertCategory createCategory(AlertCategory category) {
         return categoryRepository.save(category);
     }
 
+    @Transactional
     public AlertCategory updateCategory(
             Long id,
             AlertCategory details) {
@@ -53,6 +56,7 @@ public class AlertCategoryService {
         return categoryRepository.save(existing);
     }
 
+    @Transactional
     public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
     }

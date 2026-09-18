@@ -6,6 +6,7 @@ import com.smarthome.smart_home_backend.entity.UserContactNumberId;
 import com.smarthome.smart_home_backend.repository.UserContactNumberRepository;
 import com.smarthome.smart_home_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +39,7 @@ public class UserContactNumberService {
         return repository.findById(id);
     }
 
+    @Transactional
     public UserContactNumber createContact(
             Long userId,
             UserContactNumber contact) {
@@ -56,6 +58,7 @@ public class UserContactNumberService {
         return repository.save(contact);
     }
 
+    @Transactional
     public void deleteContact(
             Long userId,
             String contactNumber) {

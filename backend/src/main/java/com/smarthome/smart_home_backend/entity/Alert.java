@@ -36,10 +36,10 @@ public class Alert {
     @Column(name = "alert_time", nullable = false)
     private LocalDateTime alertTime;
 
-    @Column(name = "source", nullable = false, length = 30)
+    @Column(name = "source", nullable = false, length = 20)
     private String source;
 
-    @Column(name = "status", nullable = false, length = 30)
+    @Column(name = "status", nullable = false, length = 20)
     private String status;
 
     @ManyToOne

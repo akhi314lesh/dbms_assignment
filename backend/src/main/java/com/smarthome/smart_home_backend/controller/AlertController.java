@@ -1,9 +1,11 @@
 package com.smarthome.smart_home_backend.controller;
 
 import com.smarthome.smart_home_backend.entity.Alert;
+import com.smarthome.smart_home_backend.entity.User;
+import com.smarthome.smart_home_backend.security.HomeAuthorizationService;
 import com.smarthome.smart_home_backend.service.AlertService;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,46 +15,52 @@ import java.util.List;
 public class AlertController {
 
     private final AlertService alertService;
+    private final HomeAuthorizationService authService;
 
-    public AlertController(AlertService alertService) {
+    public AlertController(AlertService alertService, HomeAuthorizationService authService) {
         this.alertService = alertService;
+        this.authService = authService;
     }
 
     @GetMapping
     public List<Alert> getAllAlerts() {
-        return alertService.getAllAlerts();
+        User user = authService.requireCurrentUser();
+        if (authService.isAdmin(user)) {
+            return alertService.getAllAlerts();
+        }
+        return alertService.getAlertsByHomeIds(authService.getAccessibleHomeIds(user));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Alert> getAlertById(
-            @PathVariable Long id) {
-
+    public ResponseEntity<Alert> getAlertById(@PathVariable Long id) {
+        authService.assertCanAccessAlert(id);
         return alertService.getAlertById(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(
-                        () -> ResponseEntity.notFound().build()
-                );
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/device/{deviceId}")
-    public List<Alert> getAlertsByDevice(
-            @PathVariable Long deviceId) {
-
+    public List<Alert> getAlertsByDevice(@PathVariable Long deviceId) {
+        authService.assertCanAccessDevice(deviceId);
         return alertService.getAlertsByDevice(deviceId);
     }
 
     @GetMapping("/status/{status}")
-    public List<Alert> getAlertsByStatus(
-            @PathVariable String status) {
-
-        return alertService.getAlertsByStatus(status);
+    public List<Alert> getAlertsByStatus(@PathVariable String status) {
+        User user = authService.requireCurrentUser();
+        if (authService.isAdmin(user)) {
+            return alertService.getAlertsByStatus(status);
+        }
+        return alertService.getAlertsByStatusAndHomeIds(status, authService.getAccessibleHomeIds(user));
     }
 
     @GetMapping("/category/{categoryId}")
-    public List<Alert> getAlertsByCategory(
-            @PathVariable Long categoryId) {
-
-        return alertService.getAlertsByCategory(categoryId);
+    public List<Alert> getAlertsByCategory(@PathVariable Long categoryId) {
+        User user = authService.requireCurrentUser();
+        if (authService.isAdmin(user)) {
+            return alertService.getAlertsByCategory(categoryId);
+        }
+        return alertService.getAlertsByCategoryAndHomeIds(categoryId, authService.getAccessibleHomeIds(user));
     }
 
     @PostMapping("/device/{deviceId}")
@@ -62,16 +70,11 @@ public class AlertController {
             @RequestParam(required = false) Long ruleId,
             @RequestBody Alert alert) {
 
+        authService.assertCanAccessDevice(deviceId);
         try {
             return ResponseEntity.ok(
-                    alertService.createAlert(
-                            deviceId,
-                            categoryId,
-                            ruleId,
-                            alert
-                    )
+                    alertService.createAlert(deviceId, categoryId, ruleId, alert)
             );
-
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -82,11 +85,9 @@ public class AlertController {
             @PathVariable Long id,
             @RequestBody Alert details) {
 
+        authService.assertCanAccessAlert(id);
         try {
-            return ResponseEntity.ok(
-                    alertService.updateAlert(id, details)
-            );
-
+            return ResponseEntity.ok(alertService.updateAlert(id, details));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -97,27 +98,37 @@ public class AlertController {
             @PathVariable Long alertId,
             @PathVariable Long userId) {
 
-        try {
-            return ResponseEntity.ok(
-                    alertService.acknowledgeAlert(
-                            alertId,
-                            userId
-                    )
-            );
+        User caller = authService.requireCurrentUser();
+        authService.assertCanAccessAlert(alertId);
 
+        if (!authService.isAdmin(caller) && !caller.getUserId().equals(userId)) {
+            throw new AccessDeniedException("Cannot acknowledge alert on behalf of another user.");
+        }
+
+        try {
+            return ResponseEntity.ok(alertService.acknowledgeAlert(alertId, userId));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAlert(
-            @PathVariable Long id) {
+    @PostMapping("/{id}/acknowledge")
+    public ResponseEntity<Alert> acknowledgeAlertForCurrentUser(@PathVariable Long id) {
+        User caller = authService.requireCurrentUser();
+        authService.assertCanAccessAlert(id);
+        try {
+            return ResponseEntity.ok(alertService.acknowledgeAlert(id, caller.getUserId()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAlert(@PathVariable Long id) {
+        authService.assertCanManageAlert(id);
         try {
             alertService.deleteAlert(id);
             return ResponseEntity.noContent().build();
-
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

@@ -8,6 +8,7 @@ import com.smarthome.smart_home_backend.repository.DeviceRepository;
 import com.smarthome.smart_home_backend.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,13 @@ public class AutomationRuleService {
         return ruleRepository.findAll();
     }
 
+    public List<AutomationRule> getRulesByHomeIdsOrUserId(java.util.Collection<Long> homeIds, Long userId) {
+        if (homeIds == null || homeIds.isEmpty()) {
+            return ruleRepository.findByCreatedByUserUserId(userId);
+        }
+        return ruleRepository.findByConditionDeviceRoomHomeHomeIdInOrCreatedByUserUserId(homeIds, userId);
+    }
+
     public Optional<AutomationRule> getRuleById(Long id) {
         return ruleRepository.findById(id);
     }
@@ -45,6 +53,7 @@ public class AutomationRuleService {
         return ruleRepository.findByConditionDeviceDeviceId(deviceId);
     }
 
+    @Transactional
     public AutomationRule createRule(
             Long deviceId,
             Long userId,
@@ -66,6 +75,7 @@ public class AutomationRuleService {
         return ruleRepository.save(rule);
     }
 
+    @Transactional
     public AutomationRule updateRule(
             Long id,
             AutomationRule details) {
@@ -92,6 +102,7 @@ public class AutomationRuleService {
         return ruleRepository.save(existing);
     }
 
+    @Transactional
     public void deleteRule(Long id) {
         ruleRepository.deleteById(id);
     }

@@ -6,7 +6,14 @@ node_modules/
 dist/
 **/dist/
 dist-ssr/
+build/
+**/build/
+.vercel/
 *.local
+
+# Scratch & Temporary Dev Scripts
+scratch/
+**/scratch/
 
 # Logs
 logs/
@@ -31,4 +38,17 @@ pnpm-debug.log*
 
 # OS Files
 .DS_Store
-Thumbs.db
+Thumbs.db
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# Service Accounts & Firebase Private Keys
+*service-account*.json
+*firebase*.json
+*credentials*.json
+serviceAccountKey*.json

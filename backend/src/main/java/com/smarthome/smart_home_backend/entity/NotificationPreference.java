@@ -24,7 +24,7 @@ public class NotificationPreference {
     @JoinColumn(name = "category_id", nullable = false)
     private AlertCategory category;
 
-    @Column(name = "channel", nullable = false, length = 30)
+    @Column(name = "channel", nullable = false, length = 20)
     private String channel;
 
     @Column(name = "enabled", nullable = false)

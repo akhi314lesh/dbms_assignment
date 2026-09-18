@@ -1,6 +1,8 @@
 package com.smarthome.smart_home_backend.controller;
 
 import com.smarthome.smart_home_backend.entity.RuleAction;
+import com.smarthome.smart_home_backend.entity.User;
+import com.smarthome.smart_home_backend.security.HomeAuthorizationService;
 import com.smarthome.smart_home_backend.service.RuleActionService;
 
 import org.springframework.http.ResponseEntity;
@@ -13,21 +15,28 @@ import java.util.List;
 public class RuleActionController {
 
     private final RuleActionService actionService;
+    private final HomeAuthorizationService authService;
 
     public RuleActionController(
-            RuleActionService actionService) {
+            RuleActionService actionService,
+            HomeAuthorizationService authService) {
         this.actionService = actionService;
+        this.authService = authService;
     }
 
     @GetMapping("/actions")
     public List<RuleAction> getAllActions() {
-        return actionService.getAllActions();
+        User user = authService.getCurrentUser();
+        if (authService.isAdmin(user)) {
+            return actionService.getAllActions();
+        }
+        return actionService.getActionsByHomeIds(authService.getAccessibleHomeIds(user));
     }
 
     @GetMapping("/actions/{id}")
     public ResponseEntity<RuleAction> getActionById(
             @PathVariable Long id) {
-
+        authService.assertCanAccessAction(id);
         return actionService.getActionById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(
@@ -38,14 +47,14 @@ public class RuleActionController {
     @GetMapping("/{ruleId}/actions")
     public List<RuleAction> getActionsByRule(
             @PathVariable Long ruleId) {
-
+        authService.assertCanAccessRule(ruleId);
         return actionService.getActionsByRule(ruleId);
     }
 
     @GetMapping("/actions/device/{deviceId}")
     public List<RuleAction> getActionsByDevice(
             @PathVariable Long deviceId) {
-
+        authService.assertCanAccessDevice(deviceId);
         return actionService.getActionsByDevice(deviceId);
     }
 
@@ -54,6 +63,8 @@ public class RuleActionController {
             @PathVariable Long ruleId,
             @PathVariable Long deviceId,
             @RequestBody RuleAction action) {
+        authService.assertCanAccessRule(ruleId);
+        authService.assertCanAccessDevice(deviceId);
 
         try {
             return ResponseEntity.ok(
@@ -73,6 +84,7 @@ public class RuleActionController {
     public ResponseEntity<RuleAction> updateAction(
             @PathVariable Long id,
             @RequestBody RuleAction details) {
+        authService.assertCanAccessAction(id);
 
         try {
             return ResponseEntity.ok(
@@ -87,6 +99,7 @@ public class RuleActionController {
     @DeleteMapping("/actions/{id}")
     public ResponseEntity<Void> deleteAction(
             @PathVariable Long id) {
+        authService.assertCanAccessAction(id);
 
         try {
             actionService.deleteAction(id);

@@ -24,7 +24,7 @@ public class RuleAction {
     @JoinColumn(name = "target_device_id", nullable = false)
     private Device targetDevice;
 
-    @Column(name = "action_type", nullable = false, length = 30)
+    @Column(name = "action_type", nullable = false, length = 50)
     private String actionType;
 
     @Column(name = "action_value", length = 100)

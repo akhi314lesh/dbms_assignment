@@ -1,5 +1,6 @@
 package com.smarthome.smart_home_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,8 +29,15 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(name = "password", length = 255)
     private String password;
+
+    @Column(name = "firebase_uid", unique = true, length = 128)
+    private String firebaseUid;
+
+    @Column(name = "role", nullable = false, length = 20)
+    private String role = "USER";
 
     public User() {
     }
@@ -38,6 +46,15 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.role = "USER";
+    }
+
+    public User(String name, String email, String password, String firebaseUid, String role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.firebaseUid = firebaseUid;
+        this.role = (role != null) ? role : "USER";
     }
 
     public Long getUserId() {
@@ -70,5 +87,21 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getFirebaseUid() {
+        return firebaseUid;
+    }
+
+    public void setFirebaseUid(String firebaseUid) {
+        this.firebaseUid = firebaseUid;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

@@ -8,6 +8,7 @@ import com.smarthome.smart_home_backend.repository.HomeAccessRepository;
 import com.smarthome.smart_home_backend.repository.HomeRepository;
 import com.smarthome.smart_home_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +47,7 @@ public class HomeAccessService {
         return homeAccessRepository.findById(id);
     }
 
+    @Transactional
     public HomeAccess createAccess(
             Long userId,
             Long homeId,
@@ -69,6 +71,7 @@ public class HomeAccessService {
         return homeAccessRepository.save(access);
     }
 
+    @Transactional
     public void deleteAccess(
             Long userId,
             Long homeId) {

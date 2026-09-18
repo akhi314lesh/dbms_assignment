@@ -1,9 +1,11 @@
 package com.smarthome.smart_home_backend.controller;
 
 import com.smarthome.smart_home_backend.entity.AlertCategory;
+import com.smarthome.smart_home_backend.security.HomeAuthorizationService;
 import com.smarthome.smart_home_backend.service.AlertCategoryService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,10 +15,13 @@ import java.util.List;
 public class AlertCategoryController {
 
     private final AlertCategoryService categoryService;
+    private final HomeAuthorizationService authService;
 
     public AlertCategoryController(
-            AlertCategoryService categoryService) {
+            AlertCategoryService categoryService,
+            HomeAuthorizationService authService) {
         this.categoryService = categoryService;
+        this.authService = authService;
     }
 
     @GetMapping
@@ -39,6 +44,10 @@ public class AlertCategoryController {
     public ResponseEntity<AlertCategory> createCategory(
             @RequestBody AlertCategory category) {
 
+        if (!authService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only administrators can create alert categories.");
+        }
+
         return ResponseEntity.ok(
                 categoryService.createCategory(category)
         );
@@ -48,6 +57,10 @@ public class AlertCategoryController {
     public ResponseEntity<AlertCategory> updateCategory(
             @PathVariable Long id,
             @RequestBody AlertCategory details) {
+
+        if (!authService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only administrators can update alert categories.");
+        }
 
         try {
             return ResponseEntity.ok(
@@ -61,6 +74,10 @@ public class AlertCategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(
             @PathVariable Long id) {
+
+        if (!authService.isCurrentUserAdmin()) {
+            throw new AccessDeniedException("Only administrators can delete alert categories.");
+        }
 
         try {
             categoryService.deleteCategory(id);

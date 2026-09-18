@@ -1,11 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
-function Authentication({ onLogin }) {
+function Authentication() {
+  const {
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    sendPasswordReset,
+    authError,
+    clearError,
+  } = useAuth()
+
   const [mode, setMode] = useState('signin')
   const [showSigninPassword, setShowSigninPassword] = useState(false)
   const [showSignupPassword, setShowSignupPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
+
+  // Forgot password modal state
+  const [showForgotModal, setShowForgotModal] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
 
   const [signinData, setSigninData] = useState({
     email: '',
@@ -19,41 +34,54 @@ function Authentication({ onLogin }) {
     confirmPassword: '',
   })
 
-  const showToast = (title, message) => {
-    setToast({ title, message })
+  const showToast = (title, message, isError = false) => {
+    setToast({ title, message, isError })
 
     setTimeout(() => {
       setToast(null)
-    }, 4000)
+    }, 4500)
   }
 
-  const handleSignin = (event) => {
+  const handleSignin = async (event) => {
     event.preventDefault()
+    clearError()
+
+    if (!signinData.email || !signinData.password) {
+      showToast('Missing Credentials', 'Please provide both email and password.', true)
+      return
+    }
 
     setLoading(true)
 
-    setTimeout(() => {
+    try {
+      await signInWithEmail(signinData.email, signinData.password)
+      // onAuthStateChanged in AuthContext synchronizes with /api/auth/me and updates state
+    } catch (err) {
+      showToast('Authentication Failed', err.message || 'Unable to sign in. Please verify your credentials.', true)
+    } finally {
       setLoading(false)
-
-      showToast(
-        'Sanctuary Connected',
-        'Welcome home. Initializing your custom ambient parameters.'
-      )
-
-      // Move to the landing page
-      setTimeout(() => {
-        onLogin()
-      }, 700)
-    }, 1200)
+    }
   }
 
-  const handleSignup = (event) => {
+  const handleSignup = async (event) => {
     event.preventDefault()
+    clearError()
 
-    if (signupData.password.length < 8) {
+    if (!signupData.name.trim()) {
+      showToast('Name Required', 'Please enter your full name.', true)
+      return
+    }
+
+    if (!signupData.email.trim()) {
+      showToast('Email Required', 'Please enter a valid email address.', true)
+      return
+    }
+
+    if (signupData.password.length < 6) {
       showToast(
         'Password Too Short',
-        'Your password must contain at least 8 characters.'
+        'Your password must contain at least 6 characters.',
+        true
       )
       return
     }
@@ -61,33 +89,69 @@ function Authentication({ onLogin }) {
     if (signupData.password !== signupData.confirmPassword) {
       showToast(
         'Passwords Do Not Match',
-        'Please make sure both passwords are identical.'
+        'Please make sure both passwords are identical.',
+        true
       )
       return
     }
 
     setLoading(true)
 
-    setTimeout(() => {
+    try {
+      await signUpWithEmail(signupData.name, signupData.email, signupData.password)
+      // onAuthStateChanged in AuthContext synchronizes with /api/auth/me and updates state
+    } catch (err) {
+      showToast('Registration Notice', err.message || 'Unable to create account.', true)
+    } finally {
       setLoading(false)
+    }
+  }
 
+  const handleOpenForgotModal = () => {
+    setForgotEmail(signinData.email || '')
+    setShowForgotModal(true)
+  }
+
+  const handleSendResetEmail = async (e) => {
+    e.preventDefault()
+    if (!forgotEmail.trim()) {
+      showToast('Email Required', 'Please enter your email address to reset password.', true)
+      return
+    }
+
+    setForgotLoading(true)
+    try {
+      await sendPasswordReset(forgotEmail.trim())
+      setShowForgotModal(false)
       showToast(
-        'Sanctuary Created',
-        'Your residence account has been securely created.'
+        'Password Reset Sent',
+        `A password reset link has been dispatched to ${forgotEmail.trim()}. Please check your inbox.`
       )
-
-      setTimeout(() => {
-        onLogin()
-      }, 700)
-    }, 1200)
+    } catch (err) {
+      showToast('Reset Request Failed', err.message || 'Unable to send password reset email.', true)
+    } finally {
+      setForgotLoading(false)
+    }
   }
 
-  const handleGoogleLogin = () => {
-    showToast(
-      'Federated Authentication',
-      'Establishing secure connection with Google...'
-    )
+  useEffect(() => {
+    if (authError) {
+      showToast('Authentication Notice', authError, true)
+    }
+  }, [authError])
+
+  const handleGoogleLogin = async () => {
+    clearError()
+    setLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (err) {
+      // Handled by AuthContext and authError
+    } finally {
+      setLoading(false)
+    }
   }
+
 
   return (
     <main className="min-h-screen w-full flex flex-col lg:flex-row bg-[#FBF9F5] text-[#1F1813] overflow-x-hidden">
@@ -340,12 +404,7 @@ function Authentication({ onLogin }) {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        showToast(
-                          'Password Recovery',
-                          'Password recovery will be connected to the backend later.'
-                        )
-                      }
+                      onClick={handleOpenForgotModal}
                       className="text-xs text-[#C5A880] hover:text-[#140F0C] font-medium transition-colors"
                     >
                       Forgot password?
@@ -486,6 +545,7 @@ function Authentication({ onLogin }) {
               {/* Google */}
               <button
                 type="button"
+                id="google-signin-btn"
                 onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white border border-[#E8E1D7] hover:border-[#D7BA97]/60 hover:bg-[#F5F1EB]/60 active:scale-[0.99] transition-all duration-200 shadow-sm text-xs font-medium text-[#2A211B] tracking-wide"
               >
@@ -757,6 +817,30 @@ function Authentication({ onLogin }) {
 
               </form>
 
+              {/* Divider */}
+              <div className="relative flex items-center py-1">
+                <div className="w-full border-t border-[#E8E1D7]" />
+                <div className="absolute left-1/2 -translate-x-1/2 px-4 bg-[#FBF9F5] text-[11px] uppercase tracking-[0.2em] text-stone-400 whitespace-nowrap">
+                  or sign up with
+                </div>
+              </div>
+
+              {/* Google */}
+              <button
+                type="button"
+                id="google-signup-btn"
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white border border-[#E8E1D7] hover:border-[#D7BA97]/60 hover:bg-[#F5F1EB]/60 active:scale-[0.99] transition-all duration-200 shadow-sm text-xs font-medium text-[#2A211B] tracking-wide"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" fill="#4285F4" />
+                  <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z" fill="#34A853" />
+                  <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z" fill="#FBBC05" />
+                  <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15 4.03 3.15z" fill="#EA4335" />
+                </svg>
+                Continue with Google
+              </button>
+
               <footer className="pt-2 text-center">
 
                 <p className="text-xs text-[#3D3128]">
@@ -825,33 +909,103 @@ function Authentication({ onLogin }) {
       </section>
 
       {/* =========================
+          FORGOT PASSWORD MODAL
+      ========================== */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-md bg-[#181310] border border-[#D7BA97]/30 rounded-2xl p-6 sm:p-8 text-[#FAF7F2] shadow-2xl space-y-5">
+            <header className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#D7BA97]/15 border border-[#D7BA97]/30 text-[10px] uppercase tracking-[0.2em] text-[#E8D1B5]">
+                Account Recovery
+              </div>
+              <h3 className="font-serif text-2xl font-normal text-[#FAF7F2]">
+                Reset Password
+              </h3>
+              <p className="text-xs text-[#E6D9CD]/70 leading-relaxed">
+                Enter your registered email address and we will send you a secure Firebase link to reset your password.
+              </p>
+            </header>
+
+            <form onSubmit={handleSendResetEmail} className="space-y-4">
+              <div className="space-y-1.5 text-left">
+                <label
+                  htmlFor="forgot-email-input"
+                  className="block text-[11px] font-medium uppercase tracking-wider text-[#E8D1B5]"
+                >
+                  Email Address
+                </label>
+                <input
+                  id="forgot-email-input"
+                  type="email"
+                  required
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="name@residence.com"
+                  className="w-full bg-[#241C16] text-[#FAF7F2] text-sm placeholder:text-stone-500 rounded-xl px-4 py-3 border border-[#D7BA97]/25 focus:outline-none focus:border-[#D7BA97] focus:ring-2 focus:ring-[#D7BA97]/20 transition-all"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={forgotLoading}
+                  onClick={() => setShowForgotModal(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider text-[#FAF7F2]/70 hover:text-[#FAF7F2] hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C88242] hover:bg-[#b57335] disabled:opacity-60 text-[#140F0C] text-xs font-semibold uppercase tracking-wider transition-all shadow-md"
+                >
+                  {forgotLoading ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-[#140F0C] border-t-transparent rounded-full animate-spin"></span>
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Reset Link'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================
           TOAST
       ========================== */}
       {toast && (
-
         <aside
           aria-live="polite"
-          className="fixed top-6 right-6 z-50 max-w-sm w-[calc(100%-3rem)] bg-[#140F0C] text-[#FBF9F5] p-4 rounded-2xl shadow-2xl border border-[#D7BA97]/30 backdrop-blur-lg flex items-start gap-3"
+          className="fixed top-6 right-6 z-50 max-w-sm w-[calc(100%-3rem)] bg-[#140F0C] text-[#FBF9F5] p-4 rounded-2xl shadow-2xl border border-[#D7BA97]/30 backdrop-blur-lg flex items-start gap-3 animate-fadeIn"
         >
-
-          <div className="w-6 h-6 rounded-full bg-[#D7BA97]/20 text-[#D7BA97] flex items-center justify-center flex-shrink-0">
-            ✓
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+              toast.isError
+                ? 'bg-rose-900/40 text-rose-300 border border-rose-500/40'
+                : 'bg-[#D7BA97]/20 text-[#D7BA97]'
+            }`}
+          >
+            {toast.isError ? '✕' : '✓'}
           </div>
 
           <div className="flex-1 text-xs">
-
-            <p className="font-medium text-[#E8D1B5] tracking-wide uppercase text-[10px]">
+            <p
+              className={`font-medium tracking-wide uppercase text-[10px] ${
+                toast.isError ? 'text-rose-300' : 'text-[#E8D1B5]'
+              }`}
+            >
               {toast.title}
             </p>
 
-            <p className="text-[#FBF9F5]/80 mt-0.5">
+            <p className="text-[#FBF9F5]/80 mt-0.5 leading-relaxed">
               {toast.message}
             </p>
-
           </div>
-
         </aside>
-
       )}
 
       {/* Animation */}

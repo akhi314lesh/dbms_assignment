@@ -20,10 +20,10 @@ public class AutomationRule {
     @Column(name = "rule_name", nullable = false, length = 100)
     private String ruleName;
 
-    @Column(name = "condition_operator", nullable = false, length = 20)
+    @Column(name = "condition_operator", nullable = false, length = 10)
     private String conditionOperator;
 
-    @Column(name = "condition_value", nullable = false, length = 100)
+    @Column(name = "condition_value", nullable = false, length = 50)
     private String conditionValue;
 
     @ManyToOne
