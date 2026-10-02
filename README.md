@@ -3,6 +3,13 @@
 An enterprise-grade, full-stack IoT device monitoring and automation platform backed by **Oracle Database 21c Express Edition**, a **Spring Boot 4 / Java 21** REST API with Firebase Admin SDK, a modern **React 19 / Vite** single-page application, and an interactive **Three.js 3D Digital Twin**.
 
 ---
+## Project Team
+
+- **Frontend Development:** Hanika – 25BCE5376
+- **Backend & Database:** Sarthak Singh – 25BCE5382
+- **System Integration & Deployment:** Akhilesh Kiran Vaidya – 25BCE5300
+  
+---
 
 ## Table of Contents
 - [Overview](#overview)
