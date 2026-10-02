@@ -545,3 +545,8 @@ npm run build
 ## License
 
 All rights reserved. Developed as part of the Advanced DBMS Smart Home Engineering Curriculum.
+---
+
+## Deployment Status
+
+Frontend and backend production deployment preparation is actively in progress.
