@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import DeviceCard from '../components/DeviceCard';
 import SqlConsole from '../components/SqlConsole';
+import InfluxAnalyticsHub from '../components/InfluxAnalyticsHub';
 
 export default function HomeDetails({ home, onBack }) {
   const [rooms, setRooms] = useState([]);
@@ -462,15 +463,23 @@ export default function HomeDetails({ home, onBack }) {
           </div>
         </section>
 
+        {/* InfluxDB Time-Series Telemetry & Analytics Hub (DA3) */}
+        <section className="space-y-4">
+          <InfluxAnalyticsHub homeId={home.homeId} />
+        </section>
+
         {/* Embedded SQL Console */}
         <section className="space-y-4">
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-[#C88242] font-semibold mb-1">
-              DATABASE CONSOLE
+              DATABASE OPERATIONS
             </p>
             <h2 className="text-xl font-light tracking-wide text-[#FBF9F5]">
-              Real Backend Database Querying
+              Visual Data Manager &amp; SQL Console
             </h2>
+            <p className="text-xs text-[#A8988B] mt-1">
+              Add, update, and delete records with interactive forms or execute raw SQL and PL/SQL against Oracle 21c.
+            </p>
           </div>
 
           <SqlConsole homeId={home.homeId} />

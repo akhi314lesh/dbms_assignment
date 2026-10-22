@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import VisualCrudManager from './VisualCrudManager';
 
 export default function SqlConsole({ homeId }) {
   const { oracleUser } = useAuth();
@@ -8,6 +9,8 @@ export default function SqlConsole({ homeId }) {
   const currentUserId = oracleUser?.userId || 1;
   const currentHomeId = homeId || 1;
 
+  // Console Mode: 'VISUAL' (No-code CRUD) vs 'SQL' (Raw SQL & PL/SQL)
+  const [consoleMode, setConsoleMode] = useState('VISUAL');
   const [activeCategory, setActiveCategory] = useState('SELECT');
   const [sql, setSql] = useState('SELECT device_id, device_name, device_subtype, status, room_id FROM devices');
   const [loading, setLoading] = useState(false);
@@ -291,42 +294,86 @@ export default function SqlConsole({ homeId }) {
 
   return (
     <div className="w-full rounded-2xl bg-[#140F0C] border border-[#2E2520] p-6 shadow-2xl">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#2E2520]">
+      {/* Top Bar: Mode Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-4 border-b border-[#2E2520]">
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-[#C88242] shadow-[0_0_8px_rgba(200,130,66,0.6)]"></div>
-          <h3 className="text-sm font-semibold tracking-wider uppercase text-[#FBF9F5]">
-            SQL Console
-          </h3>
-          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#261F1A] border border-[#3E322A] text-[#A8988B]">
-            {isAdmin ? 'ADMIN · FULL SQL DML + PL/SQL' : 'USER · SQL DML & PL/SQL SCOPED TO MY HOMES'}
-          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold tracking-wider uppercase text-[#FBF9F5]">
+                {consoleMode === 'VISUAL' ? 'Visual Data Manager' : 'SQL Console'}
+              </h3>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#261F1A] border border-[#3E322A] text-[#A8988B]">
+                {isAdmin ? 'ADMIN · FULL ACCESS' : 'USER · SCOPED'}
+              </span>
+            </div>
+            <p className="text-[11px] text-[#A8988B] mt-0.5">
+              {consoleMode === 'VISUAL'
+                ? 'Interactive, zero-SQL CRUD interface — add, update, delete, or view table records effortlessly.'
+                : 'Direct SQL & PL/SQL query execution environment against Oracle Database 21c.'}
+            </p>
+          </div>
         </div>
 
-        {/* Category Tabs */}
+        {/* Primary Mode Toggle: Visual (No-Code) vs Raw SQL */}
         <div className="flex items-center gap-1 bg-[#1B1613] p-1 rounded-xl border border-[#3E322A]">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat);
-                setError(null);
-                setResult(null);
-                if (cat !== 'PL/SQL' && templates[cat]?.length > 0) {
-                  setSql(templates[cat][0].query);
-                }
-              }}
-              className={`text-[11px] font-semibold px-3 py-1 rounded-lg transition-all ${
-                activeCategory === cat
-                  ? 'bg-[#C88242] text-white shadow-md'
-                  : 'text-[#A8988B] hover:text-[#E6D9CD]'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          <button
+            onClick={() => setConsoleMode('VISUAL')}
+            className={`text-xs font-medium px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition-all ${
+              consoleMode === 'VISUAL'
+                ? 'bg-[#C88242] text-white shadow-md font-semibold'
+                : 'text-[#A8988B] hover:text-[#E6D9CD]'
+            }`}
+          >
+            <span>📋</span>
+            <span>Visual Manager (No SQL)</span>
+          </button>
+          <button
+            onClick={() => setConsoleMode('SQL')}
+            className={`text-xs font-medium px-3.5 py-1.5 rounded-lg flex items-center gap-2 transition-all ${
+              consoleMode === 'SQL'
+                ? 'bg-[#C88242] text-white shadow-md font-semibold'
+                : 'text-[#A8988B] hover:text-[#E6D9CD]'
+            }`}
+          >
+            <span>💻</span>
+            <span>SQL Console (Advanced)</span>
+          </button>
         </div>
       </div>
+
+      {consoleMode === 'VISUAL' ? (
+        <VisualCrudManager homeId={currentHomeId} />
+      ) : (
+        <>
+          {/* Category Tabs for Raw SQL */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#2E2520]">
+            <span className="text-xs uppercase tracking-wider text-[#A8988B] font-mono">
+              SQL Operations &amp; PL/SQL Routines
+            </span>
+            <div className="flex items-center gap-1 bg-[#1B1613] p-1 rounded-xl border border-[#3E322A]">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setActiveCategory(cat);
+                    setError(null);
+                    setResult(null);
+                    if (cat !== 'PL/SQL' && templates[cat]?.length > 0) {
+                      setSql(templates[cat][0].query);
+                    }
+                  }}
+                  className={`text-[11px] font-semibold px-3 py-1 rounded-lg transition-all ${
+                    activeCategory === cat
+                      ? 'bg-[#C88242] text-white shadow-md'
+                      : 'text-[#A8988B] hover:text-[#E6D9CD]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
 
       {/* Templates Row for SQL Categories */}
       {activeCategory !== 'PL/SQL' && (
@@ -624,6 +671,8 @@ export default function SqlConsole({ homeId }) {
             </div>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );

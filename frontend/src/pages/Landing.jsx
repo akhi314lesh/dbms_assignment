@@ -86,6 +86,19 @@ function Landing({ onSelectHome, onSelectCategory }) {
         <div className="brand">
           <img src="/logo.svg" alt="Smart Home" />
           <span>Smart Home</span>
+          <span style={{
+            fontSize: '10px',
+            padding: '2px 8px',
+            background: 'rgba(200, 130, 66, 0.15)',
+            border: '1px solid rgba(200, 130, 66, 0.4)',
+            borderRadius: '999px',
+            color: '#C88242',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}>
+            🏛️ Oracle 21c XE (:5173)
+          </span>
         </div>
 
         <div className="nav-links">
@@ -97,7 +110,20 @@ function Landing({ onSelectHome, onSelectCategory }) {
           </button>
           <a href="#summary">Overview</a>
           <a href="#devices">Devices</a>
-          <a href="#about">About</a>
+          <a
+            href="http://localhost:5174"
+            style={{ fontSize: 11, color: '#22d3ee', opacity: 0.9, textDecoration: 'none', letterSpacing: '0.05em', padding: '4px 10px', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 5, background: 'rgba(34,211,238,0.08)' }}
+            title="InfluxDB Smart Home Dashboard"
+          >
+            ⚡ InfluxDB Dashboard (:5174) →
+          </a>
+          <a
+            href="http://localhost:5175"
+            style={{ fontSize: 11, color: '#a78bfa', opacity: 0.9, textDecoration: 'none', letterSpacing: '0.05em', padding: '4px 10px', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 5, background: 'rgba(167,139,250,0.08)' }}
+            title="Oracle vs InfluxDB Benchmark Comparison"
+          >
+            ⚖️ Benchmark (:5175) →
+          </a>
 
           {oracleUser && (
             <div
