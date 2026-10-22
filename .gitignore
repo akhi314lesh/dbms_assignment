@@ -10,6 +10,7 @@ build/
 **/build/
 .vercel/
 *.local
+*.zip
 
 # Scratch & Temporary Dev Scripts
 scratch/
