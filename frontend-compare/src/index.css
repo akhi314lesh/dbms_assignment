@@ -1,0 +1,646 @@
+@import "tailwindcss";
+
+/* =====================================================
+   Comparison Dashboard — Global Styles
+   Website 3: Oracle vs InfluxDB
+   ===================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --oracle-color: #f97316;
+  --oracle-glow: rgba(249, 115, 22, 0.25);
+  --influx-color: #22d3ee;
+  --influx-glow: rgba(34, 211, 238, 0.25);
+  --bg-deep: #03060f;
+  --bg-panel: #080d1a;
+  --bg-card: #0d1428;
+  --bg-card-hover: #121a33;
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-oracle: rgba(249, 115, 22, 0.3);
+  --border-influx: rgba(34, 211, 238, 0.3);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 4px;
+  --transition: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Animated gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(249,115,22,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 80% 90%, rgba(34,211,238,0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root { position: relative; z-index: 1; }
+
+/* ── Nav ─────────────────────────────────────── */
+.cmp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 54px;
+  background: rgba(3, 6, 15, 0.92);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(16px);
+}
+
+.cmp-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cmp-nav-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--oracle-color), var(--influx-color));
+}
+
+.cmp-nav-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cmp-nav-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(34,211,238,0.15));
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #cbd5e1;
+}
+
+.cmp-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.cmp-nav-link {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: color var(--transition);
+}
+.cmp-nav-link:hover { color: var(--text-primary); }
+
+.cmp-nav-link.oracle { color: var(--oracle-color); opacity: 0.8; }
+.cmp-nav-link.oracle:hover { opacity: 1; }
+.cmp-nav-link.influx { color: var(--influx-color); opacity: 0.8; }
+.cmp-nav-link.influx:hover { opacity: 1; }
+
+.cmp-signout-btn {
+  font-size: 11px;
+  padding: 5px 14px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 6px;
+  color: #f87171;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  transition: background var(--transition);
+  font-family: var(--font-sans);
+}
+.cmp-signout-btn:hover { background: rgba(239,68,68,0.18); }
+
+/* ── Page Layout ──────────────────────────────── */
+.cmp-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 28px 80px;
+}
+
+/* ── Hero / Header ────────────────────────────── */
+.cmp-hero {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.cmp-hero-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.cmp-hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.cmp-hero h1 .oracle-text { color: var(--oracle-color); }
+.cmp-hero h1 .influx-text { color: var(--influx-color); }
+
+.cmp-hero-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+/* ── DB Status Strip ──────────────────────────── */
+.cmp-status-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.cmp-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cmp-status-pill.oracle {
+  border-color: var(--border-oracle);
+  background: rgba(249, 115, 22, 0.06);
+  color: var(--oracle-color);
+}
+
+.cmp-status-pill.influx {
+  border-color: var(--border-influx);
+  background: rgba(34, 211, 238, 0.06);
+  color: var(--influx-color);
+}
+
+.cmp-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.cmp-status-dot.pulse {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+/* ── Section Label ────────────────────────────── */
+.cmp-section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cmp-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+/* ── Run Button ───────────────────────────────── */
+.cmp-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition);
+  background: linear-gradient(135deg, var(--oracle-color), #a855f7, var(--influx-color));
+  color: #fff;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.cmp-run-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.cmp-run-btn:hover::before { opacity: 1; }
+.cmp-run-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 32px rgba(168,85,247,0.4); }
+.cmp-run-btn:active { transform: translateY(0); }
+.cmp-run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.cmp-run-btn.running {
+  background: linear-gradient(135deg, #1e293b, #1e293b);
+  box-shadow: none;
+  animation: btn-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(168,85,247,0); }
+}
+
+/* ── Query Config Card ────────────────────────── */
+.cmp-config-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.cmp-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cmp-config-field label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.cmp-config-field select,
+.cmp-config-field input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.cmp-config-field select:focus,
+.cmp-config-field input:focus {
+  border-color: rgba(168,85,247,0.5);
+}
+
+/* ── Race Track ───────────────────────────────── */
+.cmp-race-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.cmp-race-track {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.cmp-race-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 120px;
+  align-items: center;
+  gap: 16px;
+}
+
+.cmp-race-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cmp-race-label span { font-size: 9px; font-weight: 400; color: var(--text-muted); text-transform: none; }
+
+.cmp-race-bar-bg {
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+  position: relative;
+}
+
+.cmp-race-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.cmp-race-bar-fill.oracle {
+  background: linear-gradient(90deg, rgba(249,115,22,0.4), var(--oracle-color));
+}
+
+.cmp-race-bar-fill.influx {
+  background: linear-gradient(90deg, rgba(34,211,238,0.4), var(--influx-color));
+}
+
+.cmp-race-bar-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  font-family: var(--font-mono);
+}
+
+.cmp-race-time {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.cmp-race-time.oracle { color: var(--oracle-color); }
+.cmp-race-time.influx { color: var(--influx-color); }
+.cmp-race-time.pending { color: var(--text-muted); }
+
+/* ── Winner Banner ────────────────────────────── */
+.cmp-winner-banner {
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  border: 1px solid;
+  flex-wrap: wrap;
+}
+
+.cmp-winner-banner.influx-wins {
+  background: rgba(34,211,238,0.06);
+  border-color: var(--border-influx);
+}
+
+.cmp-winner-banner.oracle-wins {
+  background: rgba(249,115,22,0.06);
+  border-color: var(--border-oracle);
+}
+
+.cmp-winner-left { display: flex; flex-direction: column; gap: 4px; }
+
+.cmp-winner-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.cmp-winner-name {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 300;
+}
+
+.cmp-winner-name.influx { color: var(--influx-color); }
+.cmp-winner-name.oracle { color: var(--oracle-color); }
+
+.cmp-winner-speedup {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cmp-winner-speedup strong {
+  color: #a3e635;
+  font-weight: 700;
+}
+
+.cmp-winner-right {
+  font-size: 48px;
+  filter: drop-shadow(0 0 12px rgba(255,255,255,0.2));
+}
+
+/* ── Metrics Grid ─────────────────────────────── */
+.cmp-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.cmp-metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition);
+}
+
+.cmp-metric-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+}
+
+.cmp-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.cmp-metric-card.oracle::before { background: linear-gradient(90deg, transparent, var(--oracle-color), transparent); }
+.cmp-metric-card.influx::before { background: linear-gradient(90deg, transparent, var(--influx-color), transparent); }
+.cmp-metric-card.neutral::before { background: linear-gradient(90deg, transparent, #a855f7, transparent); }
+
+.cmp-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.cmp-metric-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.cmp-metric-value.oracle { color: var(--oracle-color); }
+.cmp-metric-value.influx { color: var(--influx-color); }
+.cmp-metric-value.neutral { color: #a855f7; }
+
+.cmp-metric-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Advantage Matrix ─────────────────────────── */
+.cmp-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.cmp-matrix-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cmp-matrix-table th:nth-child(2) { color: var(--oracle-color); }
+.cmp-matrix-table th:nth-child(3) { color: var(--influx-color); }
+
+.cmp-matrix-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  vertical-align: middle;
+}
+
+.cmp-matrix-table tr:last-child td { border-bottom: none; }
+
+.cmp-matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.cmp-check { color: #4ade80; font-size: 14px; }
+.cmp-cross { color: #f87171; font-size: 14px; }
+.cmp-partial { color: #fb923c; font-size: 14px; }
+
+/* ── Log Terminal ─────────────────────────────── */
+.cmp-terminal {
+  background: #010409;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 32px;
+}
+
+.cmp-terminal-line { display: flex; gap: 10px; }
+.cmp-terminal-ts { color: var(--text-muted); flex-shrink: 0; }
+.cmp-terminal-msg.ok { color: #4ade80; }
+.cmp-terminal-msg.warn { color: #fbbf24; }
+.cmp-terminal-msg.err { color: #f87171; }
+.cmp-terminal-msg.info { color: #94a3b8; }
+.cmp-terminal-msg.oracle { color: var(--oracle-color); }
+.cmp-terminal-msg.influx { color: var(--influx-color); }
+
+/* ── Justification Section ────────────────────── */
+.cmp-justify-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-influx);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.cmp-justify-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.cmp-justify-item {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.cmp-justify-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--influx-color);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.cmp-justify-item-body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 640px) {
+  .cmp-page { padding: 28px 16px 60px; }
+  .cmp-race-row { grid-template-columns: 70px 1fr 90px; }
+  .cmp-nav { padding: 0 16px; }
+  .cmp-nav-links { gap: 10px; }
+}
