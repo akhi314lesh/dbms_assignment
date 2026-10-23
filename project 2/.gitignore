@@ -1,0 +1,54 @@
+# Build & Dependency Artifacts
+target/
+**/target/
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+dist-ssr/
+build/
+**/build/
+.vercel/
+*.local
+
+# Scratch & Temporary Dev Scripts
+scratch/
+**/scratch/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & Editor Configuration
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# Service Accounts & Firebase Private Keys
+*service-account*.json
+*firebase*.json
+*credentials*.json
+serviceAccountKey*.json

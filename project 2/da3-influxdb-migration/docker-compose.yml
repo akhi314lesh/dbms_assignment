@@ -1,0 +1,30 @@
+services:
+  influxdb:
+    image: influxdb:2.7.11-alpine
+    container_name: da3-influxdb-server
+    restart: unless-stopped
+    ports:
+      - "${INFLUXDB_PORT:-8086}:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME:-admin}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-SmartHomeAdminPass123!}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG:-smarthome_org}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET:-sensor_telemetry}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-da3_super_secret_sensor_telemetry_token_123456789}
+      # Flush the write-ahead log into compressed TSM files 10 s after writes stop (default 10 min), and fully
+      # compact cold shards after 30 s (default 4 h), so the storage comparison measures InfluxDB's compressed size.
+      INFLUXD_STORAGE_CACHE_SNAPSHOT_WRITE_COLD_DURATION: 10s
+      INFLUXD_STORAGE_COMPACT_FULL_WRITE_COLD_DURATION: 30s
+    volumes:
+      - da3-influxdb-storage:/var/lib/influxdb2
+    networks:
+      - da3-influxdb-network
+
+volumes:
+  da3-influxdb-storage:
+    name: da3-influxdb-storage
+
+networks:
+  da3-influxdb-network:
+    name: da3-influxdb-network

@@ -1,0 +1,2785 @@
+{
+  "info": {
+    "_postman_id": "smarthome-api-phase9-3",
+    "name": "SmartHome API - Phase 9.3 Verification Suite",
+    "description": "Comprehensive end-to-end API test collection covering Authentication, Homes, Rooms, Devices, Categories, Alerts, Automation, Preferences, Sensor Readings, Health Report, SQL Console, Authorization, and Error Handling with Oracle 21c verification.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Authentication",
+      "item": [
+        {
+          "name": "GET /api/auth/me (Admin Identity)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Role is ADMIN\", function () { pm.expect(data.role).to.eql(\"ADMIN\"); });",
+                  "pm.test(\"Email is present and valid\", function () { pm.expect(data.email).to.be.a(\"string\"); });",
+                  "pm.test(\"User ID is present\", function () { pm.expect(data.userId).to.be.a(\"number\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/auth/me (User Identity)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Role is USER\", function () { pm.expect(data.role).to.eql(\"USER\"); });",
+                  "pm.test(\"Matches user Sophia Chen\", function () { pm.expect(data.email).to.eql(\"sophia.chen@smarthome.io\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Homes",
+      "item": [
+        {
+          "name": "GET /api/homes (Admin - All 5 Homes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns all 5 registered homes\", function () { pm.expect(data.length).to.be.at.least(5); });",
+                  "pm.test(\"Contains Home 1 and Home 2\", function () {",
+                  "    var ids = data.map(function(h) { return h.homeId; });",
+                  "    pm.expect(ids).to.include(1);",
+                  "    pm.expect(ids).to.include(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes (User - Accessible Only Home 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns exactly 1 accessible home\", function () { pm.expect(data.length).to.eql(1); });",
+                  "pm.test(\"Accessible home is Sanctuary Haven (ID 1)\", function () { pm.expect(data[0].homeId).to.eql(1); });",
+                  "pm.test(\"Foreign homes are excluded\", function () {",
+                  "    var ids = data.map(function(h) { return h.homeId; });",
+                  "    pm.expect(ids).to.not.include(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes/{{accessibleHomeId}} (Admin - Home 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Home ID matches accessibleHomeId\", function () { pm.expect(data.homeId).to.eql(1); });",
+                  "pm.test(\"Home Name is Sanctuary Haven\", function () { pm.expect(data.homeName).to.eql(\"Sanctuary Haven\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/{{accessibleHomeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "{{accessibleHomeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes/{{accessibleHomeId}} (User - Accessible Home 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"User allowed to access Home 1\", function () { pm.expect(data.homeId).to.eql(1); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/{{accessibleHomeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "{{accessibleHomeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes/{{foreignHomeId}} (User - Foreign Home 2 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Error indicates Forbidden\", function () { pm.expect(data.error).to.eql(\"Forbidden\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/{{foreignHomeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "{{foreignHomeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Rooms",
+      "item": [
+        {
+          "name": "GET /api/rooms (Admin - All 22 Rooms)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns all rooms across system\", function () { pm.expect(data.length).to.be.at.least(22); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/rooms (User - Scoped to Home 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Every room belongs strictly to accessible Home 1\", function () {",
+                  "    data.forEach(function(r) { pm.expect(r.home.homeId).to.eql(1); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/rooms/home/{{accessibleHomeId}} (User - Home 1 Rooms)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns array of rooms for Home 1\", function () { pm.expect(data.length).to.be.at.least(5); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms/home/{{accessibleHomeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "home",
+                "{{accessibleHomeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/rooms/home/{{foreignHomeId}} (User - Foreign Home Rooms Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms/home/{{foreignHomeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "home",
+                "{{foreignHomeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Devices",
+      "item": [
+        {
+          "name": "GET /api/devices (Admin - All 45 Devices)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns all 45 devices\", function () { pm.expect(data.length).to.be.at.least(45); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices (User - Accessible Devices Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"All devices belong to accessible Home 1\", function () {",
+                  "    data.forEach(function(d) { pm.expect(d.room.home.homeId).to.eql(1); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/{{testDeviceId}} (User - Accessible Device)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Device ID is 1\", function () { pm.expect(data.deviceId).to.eql(1); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/{{foreignDeviceId}} (User - Inaccessible Device Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{foreignDeviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{foreignDeviceId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/home/{{accessibleHomeId}}/detailed (User - Detailed Devices)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns detailed DTOs with homeId & homeName\", function () {",
+                  "    pm.expect(data[0].homeId).to.eql(1);",
+                  "    pm.expect(data[0].homeName).to.eql(\"Sanctuary Haven\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/home/{{accessibleHomeId}}/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "home",
+                "{{accessibleHomeId}}",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/home/{{foreignHomeId}}/detailed (User - Foreign Detailed Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/home/{{foreignHomeId}}/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "home",
+                "{{foreignHomeId}}",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/devices/{{testDeviceId}}/status (Admin - Toggle to OFFLINE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns DeviceStatusDto with deviceId & status\", function () {",
+                  "    pm.expect(data.deviceId).to.eql(1);",
+                  "    pm.expect(data.status).to.eql(\"OFFLINE\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"OFFLINE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/{{testDeviceId}} (Admin - Verify OFFLINE in Oracle)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Status is persisted as OFFLINE\", function () { pm.expect(data.status).to.eql(\"OFFLINE\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/devices/{{testDeviceId}}/status (Admin - Restore to ONLINE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Status restored to ONLINE\", function () {",
+                  "    pm.expect(data.deviceId).to.eql(1);",
+                  "    pm.expect(data.status).to.eql(\"ONLINE\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ONLINE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/{{testDeviceId}} (Admin - Verify Restored to ONLINE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Verified original status ONLINE is restored\", function () { pm.expect(data.status).to.eql(\"ONLINE\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/devices/{{testDeviceId}}/status (User - Accessible Device Allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"User successfully sets status on accessible device\", function () { pm.expect(data.status).to.eql(\"ONLINE\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ONLINE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/devices/{{foreignDeviceId}}/status (User - Inaccessible Device Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Forbidden error returned\", function () { pm.expect(data.error).to.include(\"Access denied\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{foreignDeviceId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{foreignDeviceId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ONLINE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Device Categories",
+      "item": [
+        {
+          "name": "GET /api/devices/subtype/SMART_LIGHT/detailed (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Every device matches subtype SMART_LIGHT\", function () {",
+                  "    pm.expect(data.length).to.be.at.least(1);",
+                  "    data.forEach(function(d) { pm.expect(d.deviceSubtype).to.eql(\"SMART_LIGHT\"); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/SMART_LIGHT/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "SMART_LIGHT",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/subtype/THERMOSTAT/detailed (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Every device matches subtype THERMOSTAT\", function () {",
+                  "    data.forEach(function(d) { pm.expect(d.deviceSubtype).to.eql(\"THERMOSTAT\"); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/THERMOSTAT/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "THERMOSTAT",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/subtype/TEMPERATURE_SENSOR/detailed (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Every device matches subtype TEMPERATURE_SENSOR\", function () {",
+                  "    data.forEach(function(d) { pm.expect(d.deviceSubtype).to.eql(\"TEMPERATURE_SENSOR\"); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/TEMPERATURE_SENSOR/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "TEMPERATURE_SENSOR",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/subtype/MOTION_SENSOR/detailed (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Every device matches subtype MOTION_SENSOR\", function () {",
+                  "    data.forEach(function(d) { pm.expect(d.deviceSubtype).to.eql(\"MOTION_SENSOR\"); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/MOTION_SENSOR/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "MOTION_SENSOR",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/subtype/CAMERA/detailed (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Every device matches subtype CAMERA\", function () {",
+                  "    data.forEach(function(d) { pm.expect(d.deviceSubtype).to.eql(\"CAMERA\"); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/CAMERA/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "CAMERA",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/subtype/SMART_LIGHT/detailed (User - Scoped)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"User only receives SMART_LIGHT devices in Home 1\", function () {",
+                  "    data.forEach(function(d) {",
+                  "        pm.expect(d.deviceSubtype).to.eql(\"SMART_LIGHT\");",
+                  "        pm.expect(d.homeId).to.eql(1);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/SMART_LIGHT/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "SMART_LIGHT",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/subtype/INVALID_SUBTYPE/detailed (Admin - 400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Error specifies allowed subtypes\", function () { pm.expect(data.error).to.include(\"Invalid subtype\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/subtype/INVALID_SUBTYPE/detailed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "subtype",
+                "INVALID_SUBTYPE",
+                "detailed"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Alerts",
+      "item": [
+        {
+          "name": "GET /api/alerts (Admin - All 35 Alerts)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns all 35 alerts across all homes\", function () { pm.expect(data.length).to.be.at.least(35); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alerts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/alerts (User - Accessible Alerts Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"User only receives alerts for devices in Home 1\", function () {",
+                  "    data.forEach(function(a) { pm.expect(a.device.room.home.homeId).to.eql(1); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alerts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/alerts/{{testAlertId}} (User - Accessible Alert 2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Alert ID matches testAlertId\", function () { pm.expect(data.alertId).to.eql(2); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/{{testAlertId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                "{{testAlertId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/alerts/{{testAlertId}}/acknowledge (User - Acknowledge via PL/SQL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Status transitioned to ACKNOWLEDGED\", function () { pm.expect(data.status).to.eql(\"ACKNOWLEDGED\"); });",
+                  "pm.test(\"AcknowledgedBy user matches Sophia Chen (ID 4)\", function () {",
+                  "    pm.expect(data.acknowledgedBy.userId).to.eql(4);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/{{testAlertId}}/acknowledge",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                "{{testAlertId}}",
+                "acknowledge"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute (Admin - Restore Alert 2 to ACTIVE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Alert 2 restored to ACTIVE state\", function () { pm.expect(data.success).to.be.true; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"UPDATE ALERTS SET STATUS = 'ACTIVE', ACKNOWLEDGED_BY = NULL, ACKNOWLEDGED_TIMESTAMP = NULL WHERE ALERT_ID = 2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/alerts/3/acknowledge (User - Foreign Alert 3 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/3/acknowledge",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                "3",
+                "acknowledge"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 Automation",
+      "item": [
+        {
+          "name": "GET /api/rules (Admin - All Rules)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns automation rules list\", function () { pm.expect(data.length).to.be.at.least(15); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rules"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/rules (User - Accessible Rules)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns user scoped rules\", function () { pm.expect(data).to.be.an(\"array\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rules"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08 Notification Preferences",
+      "item": [
+        {
+          "name": "GET /api/notification-preferences (Admin - All Preferences)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns all notification preferences\", function () { pm.expect(data.length).to.be.at.least(25); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notification-preferences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notification-preferences"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/notification-preferences (User - Own Preferences)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"All preferences belong to User 4\", function () {",
+                  "    data.forEach(function(p) { pm.expect(p.user.userId).to.eql(4); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notification-preferences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notification-preferences"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "09 Sensor Readings",
+      "item": [
+        {
+          "name": "GET /api/readings (Admin - All Readings)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns all 120 sensor readings\", function () { pm.expect(data.length).to.be.at.least(120); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/readings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "readings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/readings (User - Scoped to Home 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Readings belong strictly to Home 1 devices\", function () {",
+                  "    data.forEach(function(r) { pm.expect(r.device.room.home.homeId).to.eql(1); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/readings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "readings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/readings/device/4 (Admin - Trigger SP_RECORD_SENSOR_READING)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Reading created via stored procedure\", function () {",
+                  "    pm.expect(data.readingId).to.be.a(\"number\");",
+                  "    pm.expect(data.value).to.eql(23.8);",
+                  "    pm.expect(data.device.deviceId).to.eql(4);",
+                  "    pm.environment.set(\"createdReadingId\", data.readingId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/readings/device/4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "readings",
+                "device",
+                "4"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": 23.8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /api/readings/4/{{createdReadingId}} (Admin - Revert Temporary Reading)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 204 No Content\", function () {",
+                  "    pm.expect([200, 204]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/readings/4/{{createdReadingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "readings",
+                "4",
+                "{{createdReadingId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10 Health Report",
+      "item": [
+        {
+          "name": "GET /api/homes/{{accessibleHomeId}}/health-report (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Contains reportText from PL/SQL\", function () {",
+                  "    pm.expect(data.reportText).to.be.a(\"string\");",
+                  "    pm.expect(data.reportText.toUpperCase()).to.include(\"SANCTUARY HAVEN\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/{{accessibleHomeId}}/health-report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "{{accessibleHomeId}}",
+                "health-report"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes/{{accessibleHomeId}}/health-report (User - Accessible)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Contains health report text\", function () { pm.expect(data.reportText).to.be.a(\"string\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/{{accessibleHomeId}}/health-report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "{{accessibleHomeId}}",
+                "health-report"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes/{{foreignHomeId}}/health-report (User - Foreign Home Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/{{foreignHomeId}}/health-report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "{{foreignHomeId}}",
+                "health-report"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11 SQL Console",
+      "item": [
+        {
+          "name": "POST /api/sql-console/execute (Admin - SELECT Allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Query success is true\", function () { pm.expect(data.success).to.be.true; });",
+                  "pm.test(\"Returns rows array\", function () { pm.expect(data.rows.length).to.be.at.least(1); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"SELECT COUNT(*) AS CNT FROM HOMES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute (User - Scoped SELECT Allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Query success is true\", function () { pm.expect(data.success).to.be.true; });",
+                  "pm.test(\"User only sees accessible Home 1\", function () {",
+                  "    pm.expect(data.rows.length).to.eql(1);",
+                  "    pm.expect(data.rows[0].HOME_ID).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"SELECT HOME_ID, HOME_NAME FROM HOMES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute (User - Foreign INSERT Rejected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Success is false\", function () { pm.expect(data.success).to.be.false; });",
+                  "pm.test(\"Message explains home access boundary\", function () {",
+                  "    pm.expect(data.message.toLowerCase()).to.include(\"access denied\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"INSERT INTO ROOMS (ROOM_ID, ROOM_NAME, FLOOR_NUMBER, HOME_ID) VALUES (seq_room_id.NEXTVAL, 'Hacked Room', 1, 2)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute (User - Reject USERS Table Access)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Success is false\", function () { pm.expect(data.success).to.be.false; });",
+                  "pm.test(\"Message explains restricted tables\", function () {",
+                  "    pm.expect(data.message).to.include(\"Access denied\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"SELECT * FROM USERS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute (Admin - Prohibited DDL DROP Blocked)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Success is false\", function () { pm.expect(data.success).to.be.false; });",
+                  "pm.test(\"Security violation triggers on DROP\", function () {",
+                  "    pm.expect(data.message).to.include(\"Security violation\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"DROP TABLE HOMES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute (Admin - Safe Reversible DML UPDATE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Success is true\", function () { pm.expect(data.success).to.be.true; });",
+                  "pm.test(\"1 row affected\", function () { pm.expect(data.affectedRows).to.eql(1); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sql\": \"UPDATE HOMES SET HOME_NAME = 'Sanctuary Haven' WHERE HOME_ID = 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute-plsql (User - Health Report Scoped)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Success is true\", function () { pm.expect(data.success).to.be.true; });",
+                  "pm.test(\"Returns DBMS_OUTPUT lines\", function () { pm.expect(data.rows.length).to.be.at.least(1); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute-plsql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute-plsql"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routineName\": \"SP_HOME_DEVICE_HEALTH_REPORT\",\n  \"params\": {\n    \"homeId\": 1\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/sql-console/execute-plsql (User - Trigger Test Cycle Prevention)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Success is true\", function () { pm.expect(data.success).to.be.true; });",
+                  "pm.test(\"Message confirms trigger rejection\", function () { pm.expect(data.message).to.include(\"TRG_PREVENT_DEVICE_CYCLE\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sql-console/execute-plsql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sql-console",
+                "execute-plsql"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"routineName\": \"TEST_TRIGGER_CYCLE\",\n  \"params\": {\n    \"deviceId\": 1\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12 Authorization / Security",
+      "item": [
+        {
+          "name": "GET /api/users (Admin - Directory Allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Returns user directory\", function () { pm.expect(data.length).to.be.at.least(9); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/users (User - Admin Only 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Forbidden error returned\", function () { pm.expect(data.error).to.eql(\"Forbidden\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/home-access/user/11 (Admin - Allowed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/home-access/user/11",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-access",
+                "user",
+                "11"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/home-access/user/1 (User - Other User Access 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden\", function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/home-access/user/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "home-access",
+                "user",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "13 Validation / Error Handling",
+      "item": [
+        {
+          "name": "GET /api/homes (Missing Authorization Header - 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () { pm.response.to.have.status(401); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Error is Unauthorized\", function () { pm.expect(data.error).to.eql(\"Unauthorized\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/devices/{{testDeviceId}}/status (Invalid Status - 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () { pm.response.to.have.status(400); });",
+                  "var data = pm.response.json();",
+                  "pm.test(\"Error specifies allowed status values\", function () { pm.expect(data.error).to.include(\"Allowed values: ONLINE, OFFLINE, ERROR\"); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/{{testDeviceId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "{{testDeviceId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"INVALID_STATUS_CODE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/devices/99999 (Nonexistent Device - 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/devices/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "devices",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/homes/99999 (Nonexistent Home - 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/homes/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "homes",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/alerts/99999 (Nonexistent Alert - 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alerts",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
