@@ -6,7 +6,7 @@ const FLUX_TEMPLATES = [
     name: 'Recent 20 Readings',
     desc: 'Fetch the latest 20 telemetry records',
     flux: `from(bucket: "sensor_telemetry")
-  |> range(start: -24h)
+  |> range(start: 0)
   |> filter(fn: (r) => r._measurement == "sensor_reading")
   |> limit(n: 20)`,
   },
@@ -14,8 +14,8 @@ const FLUX_TEMPLATES = [
     name: '5-Minute Average Window',
     desc: 'Downsample raw time-series into 5m mean aggregates',
     flux: `from(bucket: "sensor_telemetry")
-  |> range(start: -6h)
-  |> filter(fn: (r) => r._measurement == "sensor_reading" and r._field == "temperature")
+  |> range(start: 0)
+  |> filter(fn: (r) => r._measurement == "sensor_reading" and r._field == "value")
   |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
   |> yield(name: "mean_temp")`,
   },
@@ -23,8 +23,8 @@ const FLUX_TEMPLATES = [
     name: 'Max Spikes (> 30°C)',
     desc: 'Filter high temperature threshold breaches',
     flux: `from(bucket: "sensor_telemetry")
-  |> range(start: -7d)
-  |> filter(fn: (r) => r._measurement == "sensor_reading" and r._field == "temperature")
+  |> range(start: 0)
+  |> filter(fn: (r) => r._measurement == "sensor_reading" and r._field == "value")
   |> filter(fn: (r) => r._value > 30.0)
   |> limit(n: 50)`,
   },
@@ -32,7 +32,7 @@ const FLUX_TEMPLATES = [
     name: 'Device Min/Max Summary',
     desc: 'Group by device_id and calculate extremes',
     flux: `from(bucket: "sensor_telemetry")
-  |> range(start: -24h)
+  |> range(start: 0)
   |> filter(fn: (r) => r._measurement == "sensor_reading")
   |> group(columns: ["device_id", "_field"])
   |> mean()`,
@@ -41,7 +41,7 @@ const FLUX_TEMPLATES = [
     name: 'Total Data Points Count',
     desc: 'Count total telemetry records in time range',
     flux: `from(bucket: "sensor_telemetry")
-  |> range(start: -30d)
+  |> range(start: 0)
   |> filter(fn: (r) => r._measurement == "sensor_reading")
   |> count()`,
   },
